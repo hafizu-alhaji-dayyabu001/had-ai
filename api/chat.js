@@ -11,10 +11,11 @@ export default async function handler(req, res) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server configuration error: GEMINI_API_KEY is missing.' });
+      return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is not set in Vercel.' });
     }
 
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    let lastErrorDetails = null;
     
     for (const model of models) {
       const payload = { contents };
@@ -31,9 +32,11 @@ export default async function handler(req, res) {
 
       const data = await response.json();
       if (response.ok) return res.status(200).json(data);
+      
+      lastErrorDetails = data.error?.message || JSON.stringify(data);
     }
 
-    return res.status(500).json({ error: 'All Gemini endpoints failed.' });
+    return res.status(500).json({ error: `Gemini Error: ${lastErrorDetails}` });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
