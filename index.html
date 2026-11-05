@@ -1,526 +1,326 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>HAD AI Pro Companion</title>
-<meta name="theme-color" content="#0f0f12">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="HAD AI">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HAD AI Pro Companion</title>
+    
+    <meta name="theme-color" content="#131314">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAD AI">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#131314', // Updated to match Gemini dark mode
+                        glassBg: 'rgba(255, 255, 255, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
 
-<style>
-html,body{height:100%}
-body{background:#0f0f12;color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-.glass-card{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
-.glass-nav{background:rgba(15,15,18,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08);padding-top:calc(.75rem + env(safe-area-inset-top))}
-.liquid-orb{width:140px;height:140px;background:linear-gradient(45deg,#8b5cf6,#3b82f6,#ec4899);background-size:200% 200%;border-radius:50%;animation:orbGradient 6s ease infinite,orbPulse 3s ease-in-out infinite;box-shadow:0 0 50px rgba(139,92,246,.5)}
-.liquid-orb.speaking{animation:orbGradient 2s ease infinite,orbPulse 1s ease-in-out infinite;box-shadow:0 0 80px rgba(236,72,153,.8)}
-@keyframes orbGradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-@keyframes orbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-.prose pre{background:rgba(0,0,0,.6);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);overflow-x:auto;margin:8px 0}
-.prose code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;color:#ec4899}
-.prose pre code{color:#f3f4f6}
-.prose p{margin-bottom:.5rem}.prose p:last-child{margin-bottom:0}
-.prose ul{list-style:disc;padding-left:1.25rem;margin-bottom:.5rem}
-.prose ol{list-style:decimal;padding-left:1.25rem;margin-bottom:.5rem}
-.prose{overflow-wrap:anywhere}
-</style>
+    <style>
+        body {
+            background-color: #131314;
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            height: -webkit-fill-available;
+        }
+
+        .glass-nav {
+            background: rgba(19, 19, 20, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Rendered Code Styles */
+        .prose pre { background: rgba(0, 0, 0, 0.6); padding: 12px; border-radius: 12px; overflow-x: auto; margin: 8px 0; }
+        .prose code { font-family: monospace; font-size: 0.85rem; color: #ec4899; }
+        .prose pre code { color: #f3f4f6; }
+    </style>
 </head>
-<body class="flex flex-col justify-between">
+<body class="flex flex-col justify-between h-screen pt-safe pb-safe">
 
-<header class="glass-nav fixed top-0 left-0 right-0 z-30 px-4 pb-3 flex items-center justify-between">
-  <div class="flex items-center gap-3">
-    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg">H</div>
-    <div>
-      <h1 class="font-bold text-base tracking-wide text-white">HAD AI</h1>
-      <p class="text-xs text-gray-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Gemini Active</p>
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity opacity-0"></div>
+
+    <!-- Slide-out Sidebar Drawer -->
+    <div id="sidebar" class="fixed top-0 left-0 h-full w-[80%] max-w-[320px] bg-[#131314] z-50 transform -translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
+        <!-- Sidebar Header -->
+        <div class="flex items-center justify-between p-5 pb-2">
+            <span class="text-white font-semibold text-lg tracking-wide">HAD AI</span>
+            <div class="flex gap-4 text-gray-400">
+                <button class="hover:text-white"><i data-lucide="search" class="w-5 h-5"></i></button>
+                <button class="hover:text-white" onclick="toggleSidebar()"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+
+        <!-- Sidebar Navigation Links -->
+        <div class="flex-1 overflow-y-auto px-3 py-2 space-y-6 no-scrollbar">
+            <ul class="space-y-1 text-sm font-medium text-gray-200">
+                <li onclick="clearChatHistory(); toggleSidebar()" class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+                    <i data-lucide="edit" class="w-5 h-5 text-gray-400"></i> New chat
+                </li>
+                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+                    <i data-lucide="layout-grid" class="w-5 h-5 text-gray-400"></i> Library
+                </li>
+                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+                    <i data-lucide="image" class="w-5 h-5 text-gray-400"></i> Images
+                </li>
+                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+                    <i data-lucide="clock" class="w-5 h-5 text-gray-400"></i> Scheduled
+                </li>
+                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+                    <i data-lucide="graduation-cap" class="w-5 h-5 text-gray-400"></i> Students
+                </li>
+                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+                    <i data-lucide="more-horizontal" class="w-5 h-5 text-gray-400"></i> More
+                </li>
+            </ul>
+
+            <div class="px-3">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Notebooks</h3>
+                <button class="flex items-center gap-3 p-2 w-full text-left rounded-xl hover:bg-white/10 text-sm text-gray-300">
+                    <i data-lucide="plus" class="w-5 h-5"></i> New notebook
+                </button>
+            </div>
+
+            <div class="px-3">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">All Recent</h3>
+                    <i data-lucide="filter" class="w-3.5 h-3.5 text-gray-500"></i>
+                </div>
+                <ul id="recentChatsList" class="space-y-1 text-sm text-gray-300">
+                    <li class="truncate p-2 rounded-xl hover:bg-white/10 cursor-pointer">Building HAD AI: Getting Started</li>
+                    <li class="truncate p-2 rounded-xl hover:bg-white/10 cursor-pointer">How to Get Gemini API Key</li>
+                    <li class="truncate p-2 rounded-xl hover:bg-white/10 cursor-pointer">HAD AI App Logo Design</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- User Profile / Register Section (Bottom) -->
+        <div class="p-4 border-t border-white/10 flex items-center justify-between bg-[#1a1a1c]">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="toggleAuthModal(); toggleSidebar()">
+                <div id="userAvatar" class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold border border-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.5)]">
+                    ?
+                </div>
+                <div>
+                    <p id="userNameDisplay" class="text-sm font-semibold text-white">Sign In / Register</p>
+                    <p id="userTierDisplay" class="text-xs text-gray-400">Sync your chats</p>
+                </div>
+            </div>
+            <button onclick="toggleSettingsModal()"><i data-lucide="settings" class="w-5 h-5 text-gray-400 hover:text-white"></i></button>
+        </div>
     </div>
-  </div>
-  <div class="flex items-center gap-2">
-    <select id="personaSelector" onchange="changePersona()" class="bg-white/10 text-xs font-medium text-gray-200 px-2 py-1.5 rounded-xl border border-white/10 focus:outline-none max-w-[110px]">
-      <option value="general" class="bg-gray-900">⚡ General</option>
-      <option value="coder" class="bg-gray-900">💻 Developer</option>
-      <option value="creative" class="bg-gray-900">🎨 Creative</option>
-      <option value="analyst" class="bg-gray-900">📊 Analyst</option>
-    </select>
-    <button onclick="toggleLiveMode()" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center gap-1.5 shadow-md active:scale-95 transition"><i data-lucide="radio" class="w-3.5 h-3.5"></i> Live</button>
-    <button onclick="clearChatHistory()" aria-label="Clear chat" class="p-2 rounded-xl glass-card text-gray-300 active:scale-95 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-    <button onclick="toggleSettingsModal()" aria-label="Settings" class="p-2 rounded-xl glass-card text-gray-300 active:scale-95 transition"><i data-lucide="settings" class="w-4 h-4"></i></button>
-  </div>
-</header>
 
-<main id="chatWindow" class="flex-1 overflow-y-auto pt-24 pb-28 px-4 space-y-4 no-scrollbar"></main>
+    <!-- Top Header -->
+    <header class="glass-nav fixed top-0 left-0 right-0 z-30 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="text-gray-300 hover:text-white p-1 -ml-1 active:scale-95 transition">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h1 class="font-bold text-base tracking-wide text-white">HAD AI</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <select id="personaSelector" onchange="changePersona()" class="bg-white/10 text-xs font-medium text-gray-200 px-2 py-1.5 rounded-xl border border-white/10 focus:outline-none">
+                <option value="general">⚡ General</option>
+                <option value="coder">💻 Coder</option>
+            </select>
+        </div>
+    </header>
 
-<div id="attachmentPreview" class="hidden fixed bottom-24 left-4 right-4 z-20 glass-card p-2 rounded-xl flex items-center justify-between border-purple-500/30">
-  <div class="flex items-center gap-2">
-    <img id="previewImg" class="w-12 h-12 object-cover rounded-lg border border-white/20" src="" alt="Attachment">
-    <span class="text-xs text-gray-300">Image attached for vision analysis</span>
-  </div>
-  <button onclick="clearAttachment()" aria-label="Remove image" class="p-1.5 rounded-lg bg-red-500/20 text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button>
-</div>
+    <!-- Main Chat Area -->
+    <main id="chatWindow" class="flex-1 overflow-y-auto pt-20 pb-28 px-4 space-y-4 no-scrollbar">
+        <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-600/30 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">AI</div>
+            <div class="bg-white/5 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm text-gray-200 leading-relaxed border border-white/10">
+                Hello! My new Sidebar menu and User Registration UI are online. Tap the menu icon in the top left to see it!
+            </div>
+        </div>
+    </main>
 
-<footer class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-[#0f0f12] via-[#0f0f12]/90 to-transparent" style="padding-bottom:calc(.75rem + env(safe-area-inset-bottom))">
-  <div class="max-w-4xl mx-auto glass-card rounded-2xl p-2 flex items-center gap-2 shadow-2xl">
-    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
-    <button onclick="document.getElementById('imageInput').click()" aria-label="Attach image" class="p-2.5 rounded-xl text-gray-400 active:scale-95 transition"><i data-lucide="camera" class="w-5 h-5"></i></button>
-    <textarea id="userInput" rows="1" placeholder="Ask HAD AI..." class="flex-1 bg-transparent text-base text-white focus:outline-none resize-none px-2 py-1 max-h-24" onkeydown="handleKeyDown(event)"></textarea>
-    <button id="micBtn" onclick="toggleVoiceInput()" aria-label="Voice input" class="p-2.5 rounded-xl text-gray-400 active:scale-95 transition"><i data-lucide="mic" class="w-5 h-5"></i></button>
-    <button id="sendBtn" onclick="sendMessage()" aria-label="Send" class="p-2.5 rounded-xl bg-purple-600 text-white active:scale-95 transition shadow-lg shadow-purple-600/30 disabled:opacity-40"><i data-lucide="send" class="w-5 h-5"></i></button>
-  </div>
-</footer>
+    <!-- Input Footer -->
+    <footer class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-[#131314] via-[#131314]/95 to-transparent">
+        <div class="max-w-4xl mx-auto bg-white/5 rounded-3xl p-2 flex items-center gap-2 border border-white/10 shadow-2xl">
+            <button class="p-2.5 rounded-full text-gray-400 hover:text-white active:bg-white/10 transition">
+                <i data-lucide="camera" class="w-5 h-5"></i>
+            </button>
+            <textarea id="userInput" rows="1" placeholder="Ask HAD AI..." class="flex-1 bg-transparent text-sm text-white focus:outline-none resize-none px-2 py-1 max-h-24"></textarea>
+            <button class="p-2.5 rounded-full text-gray-400 hover:text-white active:bg-white/10 transition">
+                <i data-lucide="mic" class="w-5 h-5"></i>
+            </button>
+            <button onclick="sendMessage()" class="p-2.5 rounded-full bg-white/10 text-white hover:bg-white/20 active:scale-95 transition">
+                <i data-lucide="send" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </footer>
 
-<div id="canvasModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col p-4" style="padding-top:calc(1rem + env(safe-area-inset-top))">
-  <div class="flex items-center justify-between pb-3 border-b border-white/10">
-    <div class="flex items-center gap-2"><i data-lucide="layout" class="w-5 h-5 text-purple-400"></i><h3 class="font-bold text-sm text-white">HAD Canvas Preview</h3></div>
-    <button onclick="toggleCanvasModal()" aria-label="Close" class="p-2 rounded-xl glass-card text-gray-400"><i data-lucide="x" class="w-5 h-5"></i></button>
-  </div>
-  <div class="flex-1 mt-3 rounded-2xl border border-white/10 overflow-hidden">
-    <iframe id="canvasIframe" sandbox="allow-scripts" class="w-full h-full border-none bg-white"></iframe>
-  </div>
-</div>
+    <!-- User Login & Registration Modal -->
+    <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-[#1a1a1c] w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl relative">
+            <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg mx-auto mb-3 text-xl">H</div>
+                <h3 class="font-bold text-xl text-white">Join HAD AI</h3>
+                <p class="text-xs text-gray-400 mt-1">Register to sync chats across devices</p>
+            </div>
 
-<div id="liveModal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-6" style="padding-top:calc(1.5rem + env(safe-area-inset-top));padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span><span class="text-xs font-bold uppercase tracking-widest text-gray-300">HAD Live Mode</span></div>
-    <button onclick="toggleLiveMode()" aria-label="Close live mode" class="p-2 rounded-full glass-card text-gray-400"><i data-lucide="x" class="w-6 h-6"></i></button>
-  </div>
-  <div class="flex flex-col items-center justify-center space-y-6 my-auto">
-    <div id="liveOrb" class="liquid-orb flex items-center justify-center"><i data-lucide="sparkles" class="w-10 h-10 text-white/80"></i></div>
-    <div class="text-center">
-      <h3 id="liveStatusText" class="text-lg font-semibold text-white">Listening...</h3>
-      <p id="liveTranscript" class="text-sm text-gray-400 mt-1 max-w-xs h-12 overflow-hidden">Speak naturally to talk</p>
+            <div class="space-y-4">
+                <input type="email" id="emailInput" placeholder="Email address" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition">
+                
+                <button onclick="mockRegister()" class="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold text-sm hover:bg-purple-500 active:scale-95 transition shadow-lg shadow-purple-600/30">
+                    Create Account
+                </button>
+                <button onclick="mockLogin()" class="w-full py-3 rounded-xl bg-white/5 text-gray-300 font-semibold text-sm hover:bg-white/10 border border-white/5 active:scale-95 transition">
+                    Sign In
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
-  <video id="cameraStream" class="hidden w-full h-36 object-cover rounded-2xl border border-white/10 mb-4" autoplay playsinline muted></video>
-  <div class="flex justify-center items-center gap-6">
-    <button id="toggleCameraBtn" onclick="toggleCameraVision()" aria-label="Toggle camera" class="p-4 rounded-full glass-card text-gray-300"><i data-lucide="video" class="w-6 h-6"></i></button>
-    <button onclick="toggleLiveMode()" aria-label="End live mode" class="p-5 rounded-full bg-red-600 text-white shadow-lg shadow-red-600/50"><i data-lucide="phone-off" class="w-6 h-6"></i></button>
-  </div>
-</div>
 
-<div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-  <div class="glass-card w-full max-w-md rounded-2xl p-6 space-y-5 shadow-2xl bg-[#0f0f12]/90">
-    <div class="flex justify-between items-center border-b border-white/10 pb-3">
-      <h3 class="font-bold text-lg text-white flex items-center gap-2"><i data-lucide="sliders" class="w-5 h-5 text-purple-400"></i> App Configuration</h3>
-      <button onclick="toggleSettingsModal()" aria-label="Close" class="text-gray-400"><i data-lucide="x" class="w-5 h-5"></i></button>
-    </div>
-    <div class="space-y-3">
-      <label class="text-xs font-semibold text-gray-300 uppercase">Cloud Persistence &amp; Storage</label>
-      <div class="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
-        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">Cloud Sync</span><span id="storageStatus" class="text-xs font-bold text-gray-400">Not connected</span></div>
-        <button onclick="verifyFirestoreSync()" class="w-full py-2 rounded-lg bg-purple-600/80 text-white text-xs font-semibold active:scale-95 transition flex items-center justify-center gap-2"><i data-lucide="zap" class="w-4 h-4"></i> Sync to Firestore now</button>
-      </div>
-    </div>
-    <p class="text-xs text-gray-400 leading-relaxed">🔒 Responses route via your server proxy (<code>/api/chat</code>). API keys are never exposed in the browser.</p>
-    <button onclick="toggleSettingsModal()" class="w-full py-2.5 rounded-xl bg-white/10 text-white font-semibold text-sm">Close</button>
-  </div>
-</div>
+    <script>
+        lucide.createIcons();
+        let conversationHistory = [];
+        let activeSystemInstruction = "You are HAD AI Pro Companion.";
 
-<div id="toastContainer" class="fixed left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-11/12 max-w-sm pointer-events-none" style="top:calc(4.5rem + env(safe-area-inset-top))"></div>
+        // Sidebar Logic
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Close
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
 
-<script>
-// ===== CONFIG =====
-// Paste your Firebase web config here to enable real cloud sync (enable Anonymous sign-in in Firebase Auth).
-const FIREBASE_CONFIG = null; // e.g. { apiKey:"...", authDomain:"...", projectId:"had-ai", appId:"..." }
-const MAX_HISTORY_SENT = 20;
+        // Auth Modal Logic
+        function toggleAuthModal() {
+            document.getElementById('authModal').classList.toggle('hidden');
+        }
 
-lucide.createIcons();
+        function mockRegister() {
+            const email = document.getElementById('emailInput').value;
+            if(!email) return alert('Enter an email!');
+            
+            // Temporary UI update to simulate successful registration
+            document.getElementById('userNameDisplay').innerText = email.split('@')[0];
+            document.getElementById('userTierDisplay').innerText = "Pro Companion";
+            document.getElementById('userAvatar').innerText = email.charAt(0).toUpperCase();
+            document.getElementById('userAvatar').className = "w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold border border-purple-400 shadow-[0_0_10px_rgba(147,51,234,0.5)]";
+            
+            toggleAuthModal();
+        }
 
-let conversationHistory = [];
-let currentBase64Image = null;
-let isLiveActive = false, isCameraActive = false, isSpeaking = false, isBusy = false;
-let mediaStream = null, recognition = null, voiceRec = null;
-const synth = window.speechSynthesis;
-const canvasCodes = [];
-let db = null, uid = null;
+        function mockLogin() { mockRegister(); }
 
-const personas = {
-  general: "You are HAD AI Pro Companion, an all-round intelligent assistant. Be clear, warm and concise.",
-  coder: "You are HAD AI Code Architect. Provide precise, clean, runnable code with short architectural insights.",
-  creative: "You are HAD AI Creative Partner. Generate engaging text, HTML canvas layouts (in ```html blocks), and imaginative design ideas.",
-  analyst: "You are HAD AI Research Analyst. Provide structured summaries, bullet points and analytical insights."
-};
-let activeSystemInstruction = personas.general;
+        // Chat Logic
+        async function sendMessage() {
+            const inputEl = document.getElementById('userInput');
+            const text = inputEl.value.trim();
+            if (!text) return;
 
-const $ = id => document.getElementById(id);
-const safeStore = {
-  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
-  set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
-  del(k){ try { localStorage.removeItem(k); } catch(e){} }
-};
+            appendMessage('user', text);
+            conversationHistory.push({ role: 'user', parts: [{ text: text }] });
+            inputEl.value = '';
 
-window.addEventListener('DOMContentLoaded', async () => {
-  const p = safeStore.get('had_persona');
-  if (p && personas[p]) { $('personaSelector').value = p; activeSystemInstruction = personas[p]; }
-  const saved = safeStore.get('had_chat_history');
-  if (saved) { try { conversationHistory = JSON.parse(saved) || []; } catch(e){} }
-  if (conversationHistory.length) renderSavedHistory(); else showWelcome();
-  await initFirebase();
-});
+            const loadingId = appendLoadingIndicator();
 
-function showWelcome(){
-  $('chatWindow').innerHTML = '';
-  appendMessage('ai', "Hello! I am **HAD AI Pro Companion**.\n\n- 💻 **Code Artifacts & Canvas Preview**\n- 📷 **Vision & Audio Input**\n- 🎙️ **HAD Live Voice Companion**\n- 🎭 **Custom Personas**\n\nHow can I assist you today?");
-}
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: conversationHistory, systemInstruction: activeSystemInstruction })
+                });
+                const data = await response.json();
+                document.getElementById(loadingId).remove();
 
-// History: strip image data so localStorage never overflows
-function textOnlyHistory(){
-  return conversationHistory.map(m => {
-    const parts = m.parts.filter(p => p.text);
-    return { role: m.role, parts: parts.length ? parts : [{ text: "[image]" }] };
-  });
-}
-function saveHistory(){
-  safeStore.set('had_chat_history', JSON.stringify(textOnlyHistory()));
-  syncToCloud(false);
-}
+                if (response.ok && data.candidates) {
+                    const aiReply = data.candidates[0].content.parts[0].text;
+                    conversationHistory.push({ role: 'model', parts: [{ text: aiReply }] });
+                    appendMessage('ai', aiReply);
+                } else {
+                    appendMessage('ai', `⚠️ Error: ${data.error}`);
+                }
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                appendMessage('ai', `❌ Connection Error`);
+            }
+        }
 
-function changePersona(){
-  const sel = $('personaSelector').value;
-  activeSystemInstruction = personas[sel] || personas.general;
-  safeStore.set('had_persona', sel);
-  showToast('Persona updated to ' + sel.toUpperCase());
-}
+        function appendMessage(sender, text) {
+            const chatWindow = document.getElementById('chatWindow');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex items-start gap-3 ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+            
+            let formattedText = marked.parse(text || '');
+            
+            msgDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-lg ${sender === 'user' ? 'bg-blue-600/30 border-blue-500/30 text-blue-400' : 'bg-purple-600/30 border-purple-500/30 text-purple-400'} border flex items-center justify-center text-xs font-bold shrink-0">
+                    ${sender === 'user' ? 'YOU' : 'AI'}
+                </div>
+                <div class="${sender === 'user' ? 'bg-blue-600/20 border-blue-500/30' : 'bg-white/5 border-white/10'} border p-3.5 rounded-2xl ${sender === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} max-w-[85%] text-sm text-gray-200 leading-relaxed prose">
+                    <div>${formattedText}</div>
+                </div>
+            `;
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
 
-function showToast(message, type='info'){
-  const toast = document.createElement('div');
-  toast.className = 'glass-card bg-[#0f0f12]/90 p-3 rounded-xl text-xs font-medium text-white shadow-xl flex items-center gap-2 transition-all duration-300 -translate-y-2 opacity-0 border-l-4 ' + (type==='error' ? 'border-l-red-500' : 'border-l-purple-500');
-  const icon = document.createElement('i');
-  icon.setAttribute('data-lucide', type==='error' ? 'alert-circle' : 'check-circle');
-  icon.className = 'w-4 h-4 shrink-0';
-  const span = document.createElement('span'); span.textContent = message;
-  toast.append(icon, span);
-  $('toastContainer').appendChild(toast);
-  lucide.createIcons();
-  setTimeout(() => toast.classList.remove('-translate-y-2','opacity-0'), 50);
-  setTimeout(() => { toast.classList.add('opacity-0','-translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3500);
-}
+        function appendLoadingIndicator() {
+            const id = 'loading-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex items-start gap-3';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-purple-600/30 border-purple-500/30 border flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">AI</div>
+                <div class="bg-white/5 border border-white/10 p-3.5 rounded-2xl rounded-tl-none text-sm text-gray-400 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+            `;
+            document.getElementById('chatWindow').appendChild(div);
+            return id;
+        }
 
-// Image attach (resized to keep requests small)
-function handleImageSelect(event){
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const max = 1024, scale = Math.min(1, max / Math.max(img.width, img.height));
-      const c = document.createElement('canvas');
-      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      const url = c.toDataURL('image/jpeg', 0.8);
-      currentBase64Image = url.split(',')[1];
-      $('previewImg').src = url;
-      $('attachmentPreview').classList.remove('hidden');
-      showToast('Image ready for vision analysis');
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function clearAttachment(){
-  currentBase64Image = null;
-  $('imageInput').value = '';
-  $('attachmentPreview').classList.add('hidden');
-}
-function handleKeyDown(e){
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
+        function clearChatHistory() {
+            conversationHistory = [];
+            document.getElementById('chatWindow').innerHTML = '';
+            appendMessage('ai', 'Started a new conversation.');
+        }
 
-function grabCameraFrame(){
-  const v = $('cameraStream');
-  if (!isCameraActive || !v.videoWidth) return null;
-  const c = document.createElement('canvas');
-  const scale = Math.min(1, 640 / v.videoWidth);
-  c.width = Math.round(v.videoWidth * scale); c.height = Math.round(v.videoHeight * scale);
-  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
-  return c.toDataURL('image/jpeg', 0.7).split(',')[1];
-}
-
-async function sendMessage(){
-  if (isBusy) return;
-  const inputEl = $('userInput');
-  let text = inputEl.value.trim();
-  let image = currentBase64Image;
-  let imgSrc = image ? $('previewImg').src : null;
-  if (!image && isLiveActive) image = grabCameraFrame();
-  if (!text && !image) return;
-  if (!text && image) text = 'Describe this image.';
-
-  const userPart = [{ text }];
-  if (image) userPart.push({ inlineData: { mimeType: 'image/jpeg', data: image } });
-
-  appendMessage('user', text, imgSrc);
-  conversationHistory.push({ role: 'user', parts: userPart });
-  saveHistory();
-  inputEl.value = '';
-  clearAttachment();
-
-  isBusy = true; $('sendBtn').disabled = true;
-  if (isLiveActive) $('liveStatusText').innerText = 'Thinking...';
-  const loadingId = appendLoadingIndicator();
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: conversationHistory.slice(-MAX_HISTORY_SENT),
-        systemInstruction: activeSystemInstruction
-      })
-    });
-    let data = {};
-    try { data = await res.json(); } catch(e){}
-    removeMessage(loadingId);
-
-    const reply = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('');
-    if (res.ok && reply) {
-      conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
-      saveHistory();
-      appendMessage('ai', reply);
-      if (isLiveActive) speakText(reply);
-    } else {
-      // Drop the unanswered user turn so history keeps alternating user/model
-      conversationHistory.pop(); saveHistory();
-      const err = data.error?.message || (typeof data.error === 'string' ? data.error : '') || 'Server connection issue';
-      appendMessage('ai', '⚠️ **Backend notice:** ' + err);
-    }
-  } catch (err) {
-    removeMessage(loadingId);
-    conversationHistory.pop(); saveHistory();
-    appendMessage('ai', '❌ **Connection error:** could not reach the server backend.');
-  } finally {
-    isBusy = false; $('sendBtn').disabled = false;
-    if (isLiveActive && !isSpeaking) { $('liveStatusText').innerText = 'Listening...'; startRecognition(); }
-  }
-}
-
-function appendMessage(sender, text, imgSrc=null){
-  const chat = $('chatWindow');
-  const div = document.createElement('div');
-  div.className = 'flex items-start gap-3 ' + (sender==='user' ? 'flex-row-reverse' : '');
-
-  const avatar = document.createElement('div');
-  avatar.className = 'w-8 h-8 rounded-lg border flex items-center justify-center text-xs font-bold shrink-0 ' +
-    (sender==='user' ? 'bg-blue-600/30 border-blue-500/30 text-blue-400' : 'bg-purple-600/30 border-purple-500/30 text-purple-400');
-  avatar.textContent = sender==='user' ? 'YOU' : 'AI';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'glass-card p-3.5 rounded-2xl max-w-[85%] text-sm text-gray-200 leading-relaxed prose ' + (sender==='user' ? 'rounded-tr-none' : 'rounded-tl-none');
-
-  if (imgSrc) {
-    const im = document.createElement('img');
-    im.src = imgSrc; im.className = 'w-32 h-32 object-cover rounded-xl mb-2 border border-white/20';
-    bubble.appendChild(im);
-  }
-  const body = document.createElement('div');
-  body.innerHTML = DOMPurify.sanitize(marked.parse(text || ''));
-  bubble.appendChild(body);
-
-  if (sender === 'ai') {
-    const m = /```html\s*\n([\s\S]*?)```/i.exec(text || '');
-    if (m) {
-      const idx = canvasCodes.push(m[1]) - 1;
-      const btn = document.createElement('button');
-      btn.className = 'mt-2 text-xs font-semibold text-purple-400 bg-purple-500/20 px-2.5 py-1 rounded-lg border border-purple-500/30 flex items-center gap-1';
-      btn.innerHTML = '<i data-lucide="play" class="w-3 h-3"></i> Open Canvas Artifact';
-      btn.onclick = () => openCanvasPreview(idx);
-      bubble.appendChild(btn);
-    }
-  }
-  div.append(avatar, bubble);
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-  lucide.createIcons();
-}
-
-function appendLoadingIndicator(){
-  const id = 'loading-' + Date.now();
-  const div = document.createElement('div');
-  div.id = id; div.className = 'flex items-start gap-3';
-  div.innerHTML = '<div class="w-8 h-8 rounded-lg bg-purple-600/30 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">AI</div>' +
-    '<div class="glass-card p-3.5 rounded-2xl rounded-tl-none flex items-center gap-2">' +
-    '<span class="w-2 h-2 rounded-full bg-purple-500 animate-bounce"></span>' +
-    '<span class="w-2 h-2 rounded-full bg-purple-500 animate-bounce [animation-delay:0.2s]"></span>' +
-    '<span class="w-2 h-2 rounded-full bg-purple-500 animate-bounce [animation-delay:0.4s]"></span></div>';
-  $('chatWindow').appendChild(div);
-  $('chatWindow').scrollTop = $('chatWindow').scrollHeight;
-  return id;
-}
-function removeMessage(id){ const el = $(id); if (el) el.remove(); }
-
-function renderSavedHistory(){
-  $('chatWindow').innerHTML = '';
-  conversationHistory.forEach(msg => {
-    const text = msg.parts.map(p => p.text || '').join('');
-    if (text) appendMessage(msg.role === 'user' ? 'user' : 'ai', text);
-  });
-}
-
-function clearChatHistory(){
-  if (!confirm('Clear the whole chat history?')) return;
-  conversationHistory = []; canvasCodes.length = 0;
-  safeStore.del('had_chat_history');
-  showWelcome();
-  syncToCloud(false);
-  showToast('Chat history cleared');
-}
-
-function openCanvasPreview(idx){
-  const code = canvasCodes[idx];
-  if (!code) return;
-  $('canvasIframe').srcdoc = code;
-  toggleCanvasModal();
-}
-function toggleCanvasModal(){ $('canvasModal').classList.toggle('hidden'); }
-
-// ===== Voice =====
-function getSR(){ return window.SpeechRecognition || window.webkitSpeechRecognition; }
-
-function toggleVoiceInput(){
-  const SR = getSR();
-  if (!SR) return showToast('Speech recognition not supported on this browser', 'error');
-  if (voiceRec) { voiceRec.stop(); return; }
-  voiceRec = new SR();
-  voiceRec.continuous = false;
-  voiceRec.onstart = () => { $('micBtn').classList.add('text-red-400'); showToast('Listening...'); };
-  voiceRec.onresult = e => { $('userInput').value = e.results[0][0].transcript; sendMessage(); };
-  voiceRec.onerror = () => showToast('Voice recognition failed', 'error');
-  voiceRec.onend = () => { $('micBtn').classList.remove('text-red-400'); voiceRec = null; };
-  voiceRec.start();
-}
-
-function toggleLiveMode(){
-  isLiveActive = !isLiveActive;
-  const modal = $('liveModal');
-  if (isLiveActive) {
-    modal.classList.remove('hidden');
-    $('liveStatusText').innerText = 'Listening...';
-    startRecognition();
-  } else {
-    modal.classList.add('hidden');
-    stopRecognition();
-    if (synth) synth.cancel();
-    isSpeaking = false;
-    $('liveOrb').classList.remove('speaking');
-    if (isCameraActive) toggleCameraVision();
-  }
-}
-
-function startRecognition(){
-  if (!isLiveActive || isSpeaking || isBusy) return;
-  const SR = getSR();
-  if (!SR) { showToast('Speech recognition not supported on this browser', 'error'); return; }
-  if (recognition) return;
-  recognition = new SR();
-  recognition.continuous = false;
-  recognition.onresult = e => {
-    const text = e.results[0][0].transcript;
-    $('liveTranscript').innerText = text;
-    $('userInput').value = text;
-    sendMessage();
-  };
-  recognition.onerror = () => {};
-  recognition.onend = () => {
-    recognition = null;
-    if (isLiveActive && !isSpeaking && !isBusy) setTimeout(startRecognition, 300);
-  };
-  try { recognition.start(); } catch(e){ recognition = null; }
-}
-function stopRecognition(){
-  if (recognition) { const r = recognition; recognition = null; r.onend = null; try { r.stop(); } catch(e){} }
-}
-
-function speakText(text){
-  if (!synth) { startRecognition(); return; }
-  synth.cancel();
-  stopRecognition(); // don't listen to ourselves
-  isSpeaking = true;
-  $('liveStatusText').innerText = 'Speaking...';
-  const clean = text.replace(/```[\s\S]*?```/g, ' code block ').replace(/[*_#`>]/g, '');
-  const u = new SpeechSynthesisUtterance(clean);
-  const orb = $('liveOrb');
-  const done = () => {
-    orb.classList.remove('speaking'); isSpeaking = false;
-    if (isLiveActive) { $('liveStatusText').innerText = 'Listening...'; startRecognition(); }
-  };
-  u.onstart = () => orb.classList.add('speaking');
-  u.onend = done; u.onerror = done;
-  synth.speak(u);
-}
-
-async function toggleCameraVision(){
-  const video = $('cameraStream');
-  if (!isCameraActive) {
-    try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = mediaStream;
-      video.classList.remove('hidden');
-      isCameraActive = true;
-      showToast('Camera on: a frame is sent with each spoken message');
-    } catch (err) { showToast('Camera permission denied', 'error'); }
-  } else {
-    if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-    mediaStream = null; video.srcObject = null;
-    video.classList.add('hidden');
-    isCameraActive = false;
-  }
-}
-
-function toggleSettingsModal(){ $('settingsModal').classList.toggle('hidden'); }
-
-// ===== Firebase (real sync) =====
-function setStatus(text, cls){ const el = $('storageStatus'); el.innerText = text; el.className = 'text-xs font-bold ' + cls; }
-
-async function initFirebase(){
-  if (!FIREBASE_CONFIG || typeof firebase === 'undefined') return false;
-  try {
-    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-    const cred = await firebase.auth().signInAnonymously();
-    uid = cred.user.uid;
-    db = firebase.firestore();
-    setStatus('Connected', 'text-emerald-400');
-    if (!conversationHistory.length) {
-      const snap = await db.collection('users').doc(uid).get();
-      if (snap.exists && snap.data().history) {
-        try { conversationHistory = JSON.parse(snap.data().history); renderSavedHistory(); } catch(e){}
-      }
-    }
-    return true;
-  } catch (e) {
-    setStatus('Error', 'text-red-400');
-    return false;
-  }
-}
-
-async function syncToCloud(showResult){
-  if (!db || !uid) {
-    if (showResult) showToast('Add your FIREBASE_CONFIG in the code to enable cloud sync', 'error');
-    return;
-  }
-  try {
-    if (showResult) setStatus('Syncing...', 'text-blue-400 animate-pulse');
-    await db.collection('users').doc(uid).set({
-      history: JSON.stringify(textOnlyHistory().slice(-100)),
-      updated: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    if (showResult) { setStatus('Synced', 'text-emerald-400'); showToast('Chat history backed up!'); }
-  } catch (e) {
-    setStatus('Error', 'text-red-400');
-    if (showResult) showToast('Sync failed: ' + (e.code || e.message), 'error');
-  }
-}
-function verifyFirestoreSync(){ syncToCloud(true); }
-</script>
+        function changePersona() {
+            activeSystemInstruction = document.getElementById('personaSelector').value === 'coder' 
+                ? "You are an expert coder." 
+                : "You are HAD AI Pro Companion.";
+        }
+    </script>
 </body>
 </html>
