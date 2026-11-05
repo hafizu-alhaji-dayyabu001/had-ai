@@ -17,118 +17,140 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#131314', // Updated to match Gemini dark mode
-                        glassBg: 'rgba(255, 255, 255, 0.05)',
-                    }
-                }
-            }
+            theme: { extend: { colors: { darkBg: '#131314', glassBg: 'rgba(255, 255, 255, 0.05)' } } }
         }
     </script>
 
     <style>
-        body {
-            background-color: #131314;
-            color: #f3f4f6;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
-            height: 100vh;
-            height: -webkit-fill-available;
-        }
-
-        .glass-nav {
-            background: rgba(19, 19, 20, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
+        body { background-color: #131314; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; height: 100vh; height: -webkit-fill-available; }
+        .glass-nav { background: rgba(19, 19, 20, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .liquid-orb { width: 140px; height: 140px; background: linear-gradient(45deg, #8b5cf6, #3b82f6, #ec4899); background-size: 200% 200%; border-radius: 50%; animation: orbGradient 6s ease infinite, orbPulse 3s ease-in-out infinite; box-shadow: 0 0 50px rgba(139, 92, 246, 0.5); }
+        .liquid-orb.speaking { animation: orbGradient 2s ease infinite, orbPulse 1s ease-in-out infinite; box-shadow: 0 0 80px rgba(236, 72, 153, 0.8); }
+        @keyframes orbGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Rendered Code Styles */
-        .prose pre { background: rgba(0, 0, 0, 0.6); padding: 12px; border-radius: 12px; overflow-x: auto; margin: 8px 0; }
+        .prose pre { background: rgba(0, 0, 0, 0.6); padding: 12px; border-radius: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid rgba(255,255,255,0.1); }
         .prose code { font-family: monospace; font-size: 0.85rem; color: #ec4899; }
         .prose pre code { color: #f3f4f6; }
+        /* Action Sheet Animation */
+        .sheet-open { transform: translateY(0%); }
+        .sheet-closed { transform: translateY(100%); }
     </style>
 </head>
 <body class="flex flex-col justify-between h-screen pt-safe pb-safe">
 
-    <!-- Sidebar Overlay -->
-    <div id="sidebarOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity opacity-0"></div>
+    <!-- OVERLAYS -->
+    <div id="uiOverlay" onclick="closeAllModals()" class="hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity opacity-0"></div>
 
-    <!-- Slide-out Sidebar Drawer -->
-    <div id="sidebar" class="fixed top-0 left-0 h-full w-[80%] max-w-[320px] bg-[#131314] z-50 transform -translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
-        <!-- Sidebar Header -->
+    <!-- 1. SIDEBAR MENU (Updated to match screenshots) -->
+    <div id="sidebar" class="fixed top-0 left-0 h-full w-[80%] max-w-[320px] bg-[#131314] z-50 transform -translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl border-r border-white/5">
         <div class="flex items-center justify-between p-5 pb-2">
-            <span class="text-white font-semibold text-lg tracking-wide">HAD AI</span>
+            <span class="text-white font-semibold text-lg tracking-wide">Gemini</span>
             <div class="flex gap-4 text-gray-400">
-                <button class="hover:text-white"><i data-lucide="search" class="w-5 h-5"></i></button>
-                <button class="hover:text-white" onclick="toggleSidebar()"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button class="hover:text-white bg-white/5 p-2 rounded-full"><i data-lucide="search" class="w-5 h-5"></i></button>
+                <button class="hover:text-white bg-white/5 p-2 rounded-full" onclick="closeAllModals()"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
         </div>
 
-        <!-- Sidebar Navigation Links -->
-        <div class="flex-1 overflow-y-auto px-3 py-2 space-y-6 no-scrollbar">
-            <ul class="space-y-1 text-sm font-medium text-gray-200">
-                <li onclick="clearChatHistory(); toggleSidebar()" class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
-                    <i data-lucide="edit" class="w-5 h-5 text-gray-400"></i> New chat
-                </li>
-                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
-                    <i data-lucide="layout-grid" class="w-5 h-5 text-gray-400"></i> Library
-                </li>
-                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
-                    <i data-lucide="image" class="w-5 h-5 text-gray-400"></i> Images
-                </li>
-                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
-                    <i data-lucide="clock" class="w-5 h-5 text-gray-400"></i> Scheduled
-                </li>
-                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
-                    <i data-lucide="graduation-cap" class="w-5 h-5 text-gray-400"></i> Students
-                </li>
-                <li class="flex items-center gap-3 p-3 rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
-                    <i data-lucide="more-horizontal" class="w-5 h-5 text-gray-400"></i> More
-                </li>
-            </ul>
-
-            <div class="px-3">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Notebooks</h3>
-                <button class="flex items-center gap-3 p-2 w-full text-left rounded-xl hover:bg-white/10 text-sm text-gray-300">
-                    <i data-lucide="plus" class="w-5 h-5"></i> New notebook
-                </button>
-            </div>
-
-            <div class="px-3">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">All Recent</h3>
-                    <i data-lucide="filter" class="w-3.5 h-3.5 text-gray-500"></i>
-                </div>
-                <ul id="recentChatsList" class="space-y-1 text-sm text-gray-300">
-                    <li class="truncate p-2 rounded-xl hover:bg-white/10 cursor-pointer">Building HAD AI: Getting Started</li>
-                    <li class="truncate p-2 rounded-xl hover:bg-white/10 cursor-pointer">How to Get Gemini API Key</li>
-                    <li class="truncate p-2 rounded-xl hover:bg-white/10 cursor-pointer">HAD AI App Logo Design</li>
-                </ul>
-            </div>
+        <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1 no-scrollbar">
+            <button onclick="clearChatHistory(); closeAllModals()" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 active:bg-white/20 transition">
+                <i data-lucide="edit" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">New chat</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="layout-grid" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Library</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="image" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Images</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="clock" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Scheduled</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="graduation-cap" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Students</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="settings" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Customize</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="video" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Videos</span>
+            </button>
+            <button class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition">
+                <i data-lucide="gem" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Gems</span>
+            </button>
         </div>
 
-        <!-- User Profile / Register Section (Bottom) -->
-        <div class="p-4 border-t border-white/10 flex items-center justify-between bg-[#1a1a1c]">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="toggleAuthModal(); toggleSidebar()">
-                <div id="userAvatar" class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold border border-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.5)]">
-                    ?
-                </div>
+        <div class="p-4 border-t border-white/10 bg-[#1a1a1c]">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="toggleAuthModal()">
+                <div id="userAvatar" class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg">?</div>
                 <div>
-                    <p id="userNameDisplay" class="text-sm font-semibold text-white">Sign In / Register</p>
-                    <p id="userTierDisplay" class="text-xs text-gray-400">Sync your chats</p>
+                    <p id="userNameDisplay" class="text-sm font-semibold text-white">Sign In</p>
+                    <p class="text-xs text-gray-400">Plus Account</p>
                 </div>
             </div>
-            <button onclick="toggleSettingsModal()"><i data-lucide="settings" class="w-5 h-5 text-gray-400 hover:text-white"></i></button>
         </div>
     </div>
 
-    <!-- Top Header -->
+    <!-- 2. ACTION BOTTOM SHEET (Matches image_11 exactly) -->
+    <div id="actionSheet" class="fixed inset-x-0 bottom-0 z-50 bg-[#1a1a1c] rounded-t-[32px] p-2 pb-8 shadow-2xl transition-transform duration-300 ease-out sheet-closed border-t border-white/5">
+        <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-2 mb-4"></div>
+        
+        <!-- Top Row Hardware Actions -->
+        <div class="flex justify-around px-2 mb-6">
+            <!-- Hidden inputs for actual hardware access -->
+            <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event)">
+            
+            <button onclick="document.getElementById('photoInput').click(); closeAllModals();" class="flex flex-col items-center gap-2 group">
+                <div class="w-[88px] h-[72px] bg-white/10 rounded-3xl flex items-center justify-center group-active:bg-white/20 transition">
+                    <i data-lucide="image" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-[13px] text-white font-medium">Photos</span>
+            </button>
+            <button onclick="document.getElementById('cameraInput').click(); closeAllModals();" class="flex flex-col items-center gap-2 group">
+                <div class="w-[88px] h-[72px] bg-white/10 rounded-3xl flex items-center justify-center group-active:bg-white/20 transition">
+                    <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-[13px] text-white font-medium">Camera</span>
+            </button>
+            <button onclick="toggleAuthModal()" class="flex flex-col items-center gap-2 group">
+                <div class="w-[88px] h-[72px] bg-white/10 rounded-3xl flex items-center justify-center overflow-hidden group-active:bg-white/20 transition">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">H</div>
+                </div>
+                <span class="text-[13px] text-white font-medium">Avatar</span>
+            </button>
+        </div>
+
+        <!-- List Actions -->
+        <div class="space-y-1 px-2">
+            <button onclick="setMode('image'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 active:bg-white/10 transition">
+                <i data-lucide="image" class="w-6 h-6 text-gray-400"></i>
+                <div><div class="text-white text-[15px] font-semibold">Create images</div><div class="text-gray-400 text-[13px]">Visualize and edit</div></div>
+            </button>
+            <button onclick="showToast('Video generation API coming soon!')" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl opacity-50">
+                <i data-lucide="video" class="w-6 h-6 text-gray-500"></i>
+                <div><div class="text-gray-400 text-[15px] font-semibold">Create videos</div><div class="text-gray-500 text-[13px]">Limit resets tonight</div></div>
+            </button>
+            <button onclick="showToast('Music generation API coming soon!')" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 active:bg-white/10 transition">
+                <i data-lucide="music" class="w-6 h-6 text-gray-400"></i>
+                <div><div class="text-white text-[15px] font-semibold">Create music</div><div class="text-gray-400 text-[13px]">Make audio tracks</div></div>
+            </button>
+            <button onclick="setMode('canvas'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 active:bg-white/10 transition">
+                <i data-lucide="layout-template" class="w-6 h-6 text-gray-400"></i>
+                <div><div class="text-white text-[15px] font-semibold">Canvas</div><div class="text-gray-400 text-[13px]">Code, write, or make slides</div></div>
+            </button>
+            <button onclick="setMode('research'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl opacity-50">
+                <i data-lucide="hexagon" class="w-6 h-6 text-gray-500"></i>
+                <div><div class="text-gray-400 text-[15px] font-semibold">Deep research</div><div class="text-gray-500 text-[13px]">Limit resets tonight</div></div>
+            </button>
+            <button onclick="setMode('learn'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 active:bg-white/10 transition">
+                <i data-lucide="book-open" class="w-6 h-6 text-gray-400"></i>
+                <div><div class="text-white text-[15px] font-semibold">Guided learning</div><div class="text-gray-400 text-[13px]">Get step-by-step help</div></div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
     <header class="glass-nav fixed top-0 left-0 right-0 z-30 px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <button onclick="toggleSidebar()" class="text-gray-300 hover:text-white p-1 -ml-1 active:scale-95 transition">
@@ -137,10 +159,10 @@
             <h1 class="font-bold text-base tracking-wide text-white">HAD AI</h1>
         </div>
         <div class="flex items-center gap-2">
-            <select id="personaSelector" onchange="changePersona()" class="bg-white/10 text-xs font-medium text-gray-200 px-2 py-1.5 rounded-xl border border-white/10 focus:outline-none">
-                <option value="general">⚡ General</option>
-                <option value="coder">💻 Coder</option>
-            </select>
+            <span id="activeModeBadge" class="bg-white/10 text-[11px] font-medium text-gray-300 px-2.5 py-1 rounded-full border border-white/5">General</span>
+            <button onclick="toggleLiveMode()" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center gap-1.5 shadow-md active:scale-95 transition">
+                <i data-lucide="radio" class="w-3 h-3"></i> Live
+            </button>
         </div>
     </header>
 
@@ -148,107 +170,242 @@
     <main id="chatWindow" class="flex-1 overflow-y-auto pt-20 pb-28 px-4 space-y-4 no-scrollbar">
         <div class="flex items-start gap-3">
             <div class="w-8 h-8 rounded-lg bg-purple-600/30 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">AI</div>
-            <div class="bg-white/5 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm text-gray-200 leading-relaxed border border-white/10">
-                Hello! My new Sidebar menu and User Registration UI are online. Tap the menu icon in the top left to see it!
+            <div class="bg-[#1e1e1e] p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-[15px] text-gray-200 border border-white/5 prose">
+                Hello! My new Action Sheet and Hardware links are live. Tap the ➕ button below to test Photos, Camera, and Canvas mode!
             </div>
         </div>
     </main>
 
-    <!-- Input Footer -->
+    <!-- Image Attachment Preview -->
+    <div id="attachmentPreview" class="hidden fixed bottom-20 left-4 right-4 z-20 bg-[#1a1a1c] p-2 rounded-2xl flex items-center justify-between border border-white/10 shadow-xl">
+        <div class="flex items-center gap-3">
+            <img id="previewImg" class="w-12 h-12 object-cover rounded-xl" src="" alt="Attachment">
+            <span class="text-sm font-medium text-gray-200">Ready to upload</span>
+        </div>
+        <button onclick="clearAttachment()" class="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+
+    <!-- Footer Input Bar (Replaced camera with + button) -->
     <footer class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-[#131314] via-[#131314]/95 to-transparent">
-        <div class="max-w-4xl mx-auto bg-white/5 rounded-3xl p-2 flex items-center gap-2 border border-white/10 shadow-2xl">
-            <button class="p-2.5 rounded-full text-gray-400 hover:text-white active:bg-white/10 transition">
-                <i data-lucide="camera" class="w-5 h-5"></i>
+        <div class="max-w-4xl mx-auto bg-white/5 rounded-full p-1.5 flex items-center gap-1 border border-white/10 shadow-2xl pl-2">
+            <button onclick="toggleActionSheet()" class="p-2.5 rounded-full bg-white/10 text-white active:scale-95 transition flex items-center justify-center">
+                <i data-lucide="plus" class="w-5 h-5"></i>
             </button>
-            <textarea id="userInput" rows="1" placeholder="Ask HAD AI..." class="flex-1 bg-transparent text-sm text-white focus:outline-none resize-none px-2 py-1 max-h-24"></textarea>
-            <button class="p-2.5 rounded-full text-gray-400 hover:text-white active:bg-white/10 transition">
+            <textarea id="userInput" rows="1" placeholder="Ask HAD AI..." class="flex-1 bg-transparent text-[15px] text-white focus:outline-none resize-none px-3 py-2 max-h-24 leading-tight"></textarea>
+            <button onclick="toggleVoiceInput()" class="p-2.5 rounded-full text-gray-400 hover:text-white active:bg-white/10 transition">
                 <i data-lucide="mic" class="w-5 h-5"></i>
             </button>
-            <button onclick="sendMessage()" class="p-2.5 rounded-full bg-white/10 text-white hover:bg-white/20 active:scale-95 transition">
+            <button onclick="sendMessage()" class="p-2.5 rounded-full bg-white/10 text-white hover:bg-white/20 active:scale-95 transition mr-0.5">
                 <i data-lucide="send" class="w-5 h-5"></i>
             </button>
         </div>
     </footer>
 
-    <!-- User Login & Registration Modal -->
-    <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-[#1a1a1c] w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl relative">
-            <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            
+    <!-- Auth Modal -->
+    <div id="authModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-[#1a1a1c] w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl relative z-50">
             <div class="text-center mb-6">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg mx-auto mb-3 text-xl">H</div>
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg mx-auto mb-3 text-xl">H</div>
                 <h3 class="font-bold text-xl text-white">Join HAD AI</h3>
-                <p class="text-xs text-gray-400 mt-1">Register to sync chats across devices</p>
             </div>
-
             <div class="space-y-4">
-                <input type="email" id="emailInput" placeholder="Email address" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition">
-                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition">
-                
-                <button onclick="mockRegister()" class="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold text-sm hover:bg-purple-500 active:scale-95 transition shadow-lg shadow-purple-600/30">
-                    Create Account
-                </button>
-                <button onclick="mockLogin()" class="w-full py-3 rounded-xl bg-white/5 text-gray-300 font-semibold text-sm hover:bg-white/10 border border-white/5 active:scale-95 transition">
-                    Sign In
-                </button>
+                <input type="email" id="emailInput" placeholder="Email address" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none">
+                <button onclick="mockRegister()" class="w-full py-3.5 rounded-2xl bg-white text-black font-bold text-sm shadow-lg active:scale-95 transition">Sign In</button>
             </div>
         </div>
     </div>
 
+    <!-- Live Voice Modal -->
+    <div id="liveModal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span><span class="text-xs font-bold uppercase tracking-widest text-gray-300">Live Mode</span></div>
+        </div>
+        <div class="flex flex-col items-center justify-center space-y-6 my-auto">
+            <div id="liveOrb" class="liquid-orb flex items-center justify-center"><i data-lucide="sparkles" class="w-10 h-10 text-white/80"></i></div>
+            <div class="text-center"><h3 class="text-lg font-semibold text-white">Listening...</h3><p id="liveTranscript" class="text-sm text-gray-400 mt-1 h-12">Speak naturally</p></div>
+        </div>
+        <div class="flex justify-center mb-8"><button onclick="toggleLiveMode()" class="p-5 rounded-full bg-red-600 text-white shadow-lg shadow-red-600/50"><i data-lucide="phone-off" class="w-6 h-6"></i></button></div>
+    </div>
+
+    <div id="toastContainer" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-11/12 max-w-sm pointer-events-none"></div>
+
     <script>
         lucide.createIcons();
         let conversationHistory = [];
-        let activeSystemInstruction = "You are HAD AI Pro Companion.";
+        let activeSystemInstruction = "You are HAD AI, a helpful assistant.";
+        let currentBase64Image = null;
+        let isLiveActive = false;
+        let recognition = null;
+        let synth = window.speechSynthesis;
 
-        // Sidebar Logic
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `bg-[#2a2a2c] p-3.5 rounded-2xl text-[13px] font-medium text-white shadow-2xl flex items-center gap-3 border border-white/10`;
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-purple-400"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Modal Controllers
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
+            const overlay = document.getElementById('uiOverlay');
             if (sidebar.classList.contains('-translate-x-full')) {
-                // Open
                 sidebar.classList.remove('-translate-x-full');
                 overlay.classList.remove('hidden');
                 setTimeout(() => overlay.classList.remove('opacity-0'), 10);
             } else {
-                // Close
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('opacity-0');
-                setTimeout(() => overlay.classList.add('hidden'), 300);
+                closeAllModals();
             }
         }
 
-        // Auth Modal Logic
+        function toggleActionSheet() {
+            const sheet = document.getElementById('actionSheet');
+            const overlay = document.getElementById('uiOverlay');
+            if (sheet.classList.contains('sheet-closed')) {
+                sheet.classList.remove('sheet-closed');
+                sheet.classList.add('sheet-open');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                closeAllModals();
+            }
+        }
+
         function toggleAuthModal() {
-            document.getElementById('authModal').classList.toggle('hidden');
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('uiOverlay').classList.remove('hidden');
+            setTimeout(() => document.getElementById('uiOverlay').classList.remove('opacity-0'), 10);
+        }
+
+        function closeAllModals() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            
+            const sheet = document.getElementById('actionSheet');
+            sheet.classList.remove('sheet-open');
+            sheet.classList.add('sheet-closed');
+            
+            document.getElementById('authModal').classList.add('hidden');
+            
+            const overlay = document.getElementById('uiOverlay');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
         }
 
         function mockRegister() {
             const email = document.getElementById('emailInput').value;
-            if(!email) return alert('Enter an email!');
-            
-            // Temporary UI update to simulate successful registration
-            document.getElementById('userNameDisplay').innerText = email.split('@')[0];
-            document.getElementById('userTierDisplay').innerText = "Pro Companion";
-            document.getElementById('userAvatar').innerText = email.charAt(0).toUpperCase();
-            document.getElementById('userAvatar').className = "w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold border border-purple-400 shadow-[0_0_10px_rgba(147,51,234,0.5)]";
-            
-            toggleAuthModal();
+            if(!email) return;
+            const name = email.split('@')[0];
+            document.getElementById('userNameDisplay').innerText = name;
+            document.getElementById('userAvatar').innerText = name.charAt(0).toUpperCase();
+            closeAllModals();
+            showToast("Welcome back, " + name);
         }
 
-        function mockLogin() { mockRegister(); }
+        // Hardware & Features
+        function setMode(mode) {
+            const badge = document.getElementById('activeModeBadge');
+            if (mode === 'canvas') {
+                activeSystemInstruction = "You are HAD Canvas. Output comprehensive HTML/JS web applications. Always wrap code in ```html blocks.";
+                badge.innerText = "Canvas mode";
+                showToast("Canvas Code Engine activated");
+            } else if (mode === 'learn') {
+                activeSystemInstruction = "You are a Guided Learning Tutor. Break concepts down into simple, step-by-step lessons.";
+                badge.innerText = "Guided Tutor";
+                showToast("Learning Mode activated");
+            } else if (mode === 'image') {
+                activeSystemInstruction = "User wants to generate an image. Provide a highly detailed prompt description that an image generator could use.";
+                badge.innerText = "Image Prompter";
+                showToast("Image Generation Prompt Mode active");
+            }
+        }
 
-        // Chat Logic
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentBase64Image = e.target.result.split(',')[1];
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('attachmentPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearAttachment() {
+            currentBase64Image = null;
+            document.getElementById('photoInput').value = '';
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('attachmentPreview').classList.add('hidden');
+        }
+
+        function toggleLiveMode() {
+            isLiveActive = !isLiveActive;
+            const liveModal = document.getElementById('liveModal');
+            if (isLiveActive) {
+                liveModal.classList.remove('hidden');
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    recognition = new SpeechRec();
+                    recognition.onresult = (e) => {
+                        const txt = e.results[0][0].transcript;
+                        document.getElementById('liveTranscript').innerText = txt;
+                        document.getElementById('userInput').value = txt;
+                        sendMessage();
+                    };
+                    recognition.onend = () => { if (isLiveActive) recognition.start(); };
+                    recognition.start();
+                }
+            } else {
+                liveModal.classList.add('hidden');
+                if (recognition) recognition.stop();
+            }
+        }
+
+        function speakText(text) {
+            if (!synth) return;
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text.replace(/[*_#`]/g, ''));
+            const orb = document.getElementById('liveOrb');
+            utterance.onstart = () => orb?.classList.add('speaking');
+            utterance.onend = () => orb?.classList.remove('speaking');
+            synth.speak(utterance);
+        }
+
+        function toggleVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { showToast('Speech unsupported'); return; }
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRec();
+            recognition.onstart = () => showToast('Listening...');
+            recognition.onresult = (e) => {
+                document.getElementById('userInput').value = e.results[0][0].transcript;
+                sendMessage();
+            };
+            recognition.start();
+        }
+
+        function clearChatHistory() {
+            conversationHistory = [];
+            document.getElementById('chatWindow').innerHTML = '';
+            showToast('Chat history cleared');
+        }
+
+        // Core API Logic
         async function sendMessage() {
             const inputEl = document.getElementById('userInput');
             const text = inputEl.value.trim();
-            if (!text) return;
+            if (!text && !currentBase64Image) return;
 
-            appendMessage('user', text);
-            conversationHistory.push({ role: 'user', parts: [{ text: text }] });
+            const userPart = [];
+            if (text) userPart.push({ text: text });
+            if (currentBase64Image) userPart.push({ inlineData: { mimeType: "image/jpeg", data: currentBase64Image } });
+
+            appendMessage('user', text, currentBase64Image ? document.getElementById('previewImg').src : null);
+            conversationHistory.push({ role: 'user', parts: userPart });
             inputEl.value = '';
+            clearAttachment();
 
             const loadingId = appendLoadingIndicator();
 
@@ -265,28 +422,29 @@
                     const aiReply = data.candidates[0].content.parts[0].text;
                     conversationHistory.push({ role: 'model', parts: [{ text: aiReply }] });
                     appendMessage('ai', aiReply);
+                    if (isLiveActive) speakText(aiReply);
                 } else {
-                    appendMessage('ai', `⚠️ Error: ${data.error}`);
+                    appendMessage('ai', `⚠️ API Error: ${data.error}`);
                 }
             } catch (err) {
                 document.getElementById(loadingId).remove();
-                appendMessage('ai', `❌ Connection Error`);
+                appendMessage('ai', `❌ Network Error`);
             }
         }
 
-        function appendMessage(sender, text) {
+        function appendMessage(sender, text, imgSrc = null) {
             const chatWindow = document.getElementById('chatWindow');
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex items-start gap-3 ${sender === 'user' ? 'flex-row-reverse' : ''}`;
-            
+            let imgHtml = imgSrc ? `<img src="${imgSrc}" class="w-32 h-32 object-cover rounded-xl mb-2 border border-white/20">` : '';
             let formattedText = marked.parse(text || '');
             
             msgDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-lg ${sender === 'user' ? 'bg-blue-600/30 border-blue-500/30 text-blue-400' : 'bg-purple-600/30 border-purple-500/30 text-purple-400'} border flex items-center justify-center text-xs font-bold shrink-0">
-                    ${sender === 'user' ? 'YOU' : 'AI'}
+                <div class="w-8 h-8 rounded-full ${sender === 'user' ? 'bg-blue-600' : 'bg-gradient-to-tr from-purple-600 to-blue-500'} flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-lg">
+                    ${sender === 'user' ? 'YOU' : 'H'}
                 </div>
-                <div class="${sender === 'user' ? 'bg-blue-600/20 border-blue-500/30' : 'bg-white/5 border-white/10'} border p-3.5 rounded-2xl ${sender === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} max-w-[85%] text-sm text-gray-200 leading-relaxed prose">
-                    <div>${formattedText}</div>
+                <div class="bg-[#1e1e1e] border border-white/5 p-3.5 rounded-3xl ${sender === 'user' ? 'rounded-tr-sm' : 'rounded-tl-sm'} max-w-[85%] text-[15px] text-gray-200 prose leading-relaxed">
+                    ${imgHtml}<div>${formattedText}</div>
                 </div>
             `;
             chatWindow.appendChild(msgDiv);
@@ -299,27 +457,16 @@
             div.id = id;
             div.className = 'flex items-start gap-3';
             div.innerHTML = `
-                <div class="w-8 h-8 rounded-lg bg-purple-600/30 border-purple-500/30 border flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">AI</div>
-                <div class="bg-white/5 border border-white/10 p-3.5 rounded-2xl rounded-tl-none text-sm text-gray-400 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></span>
-                    <span class="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.2s]"></span>
-                    <span class="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.4s]"></span>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-lg">H</div>
+                <div class="bg-[#1e1e1e] border border-white/5 p-4 rounded-3xl rounded-tl-sm flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-gray-500 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:0.4s]"></span>
                 </div>
             `;
             document.getElementById('chatWindow').appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
             return id;
-        }
-
-        function clearChatHistory() {
-            conversationHistory = [];
-            document.getElementById('chatWindow').innerHTML = '';
-            appendMessage('ai', 'Started a new conversation.');
-        }
-
-        function changePersona() {
-            activeSystemInstruction = document.getElementById('personaSelector').value === 'coder' 
-                ? "You are an expert coder." 
-                : "You are HAD AI Pro Companion.";
         }
     </script>
 </body>
