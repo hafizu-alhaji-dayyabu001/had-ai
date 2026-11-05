@@ -11,18 +11,22 @@ export default async function handler(req, res) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel settings.' });
+      return res.status(500).json({ error: 'GEMINI_API_KEY environment variable is missing in Vercel.' });
     }
 
-    // Notice we removed the broken 1.5-flash model here:
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+    const defaultInternalPrompt = `You are HAD AI Pro Companion, an advanced multi-modal AI assistant powered by Gemini, ChatGPT, and Claude capabilities. Always output web app code inside complete \`\`\`html blocks so the Canvas preview engine can execute it automatically. Maintain concise, structured Markdown responses.`;
+
+    const activePrompt = systemInstruction || defaultInternalPrompt;
+    
+    // Updated to the latest stable Gemini API models
+    const models = ['gemini-3.8-flash', 'gemini-3.5-flash-lite'];
     let lastErrorDetails = null;
 
     for (const model of models) {
-      const payload = { contents };
-      if (systemInstruction) {
-        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-      }
+      const payload = {
+        contents,
+        systemInstruction: { parts: [{ text: activePrompt }] }
+      };
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
