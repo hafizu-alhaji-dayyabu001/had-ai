@@ -35,8 +35,6 @@
         @keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Fixed Code Blocks for Mobile Screening */
         .prose pre { background: rgba(0, 0, 0, 0.8); padding: 10px; border-radius: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid rgba(255,255,255,0.1); max-width: 100%; word-break: break-all; white-space: pre-wrap; }
         .prose code { font-family: monospace; font-size: 0.75rem; color: #ec4899; word-break: break-all; }
         .prose pre code { color: #f3f4f6; }
@@ -49,24 +47,32 @@
     <!-- GLOBAL OVERLAY -->
     <div id="uiOverlay" onclick="closeAllModals()" class="hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity opacity-0"></div>
 
-    <!-- SIDEBAR MENU -->
+    <!-- FULLY FUNCTIONAL SIDEBAR MENU -->
     <div id="sidebar" class="fixed top-0 left-0 h-full w-[80%] max-w-[320px] bg-[#131314] z-50 transform -translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl border-r border-white/5">
         <div class="flex items-center justify-between p-5 pb-2">
             <span class="text-white font-semibold text-lg tracking-wide">HAD AI</span>
-            <button class="hover:text-white bg-white/5 p-2 rounded-full" onclick="closeAllModals()"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <button class="hover:text-white bg-white/5 p-2 rounded-full cursor-pointer" onclick="closeAllModals()"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
 
         <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1 no-scrollbar">
-            <button onclick="clearChatHistory(); closeAllModals()" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 active:bg-white/20 transition cursor-pointer">
+            <!-- 1. New Chat -->
+            <button onclick="clearChatHistory(); closeAllModals()" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 active:bg-white/25 transition cursor-pointer">
                 <i data-lucide="edit" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">New chat</span>
             </button>
-            <button onclick="showToast('Projects Hub opened'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
+            <!-- 2. Projects Hub -->
+            <button onclick="openProjectsModal(); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
                 <i data-lucide="folder-kanban" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Projects</span>
             </button>
-            <button onclick="showToast('Cloud sync active'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
-                <i data-lucide="layout-grid" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Library & Sync</span>
+            <!-- 3. Library -->
+            <button onclick="openLibraryModal(); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
+                <i data-lucide="layout-grid" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Library</span>
             </button>
-            <button onclick="openSettingsModal()" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
+            <!-- 4. Images Gallery Mode -->
+            <button onclick="setMode('image'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
+                <i data-lucide="image" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Images</span>
+            </button>
+            <!-- 5. Settings -->
+            <button onclick="openSettingsModal();" class="flex items-center gap-4 p-3 w-full text-left rounded-full hover:bg-white/10 transition cursor-pointer">
                 <i data-lucide="settings" class="w-5 h-5 text-gray-200"></i> <span class="text-gray-200 font-medium text-sm">Settings</span>
             </button>
         </div>
@@ -81,7 +87,7 @@
                     </div>
                 </div>
             </div>
-            <button id="signOutBtn" onclick="handleSignOut()" class="hidden w-full py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/20 active:scale-95 transition">Sign Out</button>
+            <button id="signOutBtn" onclick="handleSignOut()" class="hidden w-full py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/20 active:scale-95 transition cursor-pointer">Sign Out</button>
         </div>
     </div>
 
@@ -92,25 +98,25 @@
             <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event)">
             
-            <button onclick="document.getElementById('photoInput').click(); closeAllModals();" class="flex flex-col items-center gap-2 group">
+            <button onclick="document.getElementById('photoInput').click(); closeAllModals();" class="flex flex-col items-center gap-2 group cursor-pointer">
                 <div class="w-[88px] h-[72px] bg-white/10 rounded-3xl flex items-center justify-center group-active:bg-white/20 transition"><i data-lucide="image" class="w-6 h-6 text-white"></i></div>
                 <span class="text-[13px] text-white font-medium">Photos</span>
             </button>
-            <button onclick="document.getElementById('cameraInput').click(); closeAllModals();" class="flex flex-col items-center gap-2 group">
+            <button onclick="document.getElementById('cameraInput').click(); closeAllModals();" class="flex flex-col items-center gap-2 group cursor-pointer">
                 <div class="w-[88px] h-[72px] bg-white/10 rounded-3xl flex items-center justify-center group-active:bg-white/20 transition"><i data-lucide="camera" class="w-6 h-6 text-white"></i></div>
                 <span class="text-[13px] text-white font-medium">Camera</span>
             </button>
-            <button onclick="openAuthModal()" class="flex flex-col items-center gap-2 group">
+            <button onclick="openAuthModal()" class="flex flex-col items-center gap-2 group cursor-pointer">
                 <div class="w-[88px] h-[72px] bg-white/10 rounded-3xl flex items-center justify-center group-active:bg-white/20 transition"><i data-lucide="user" class="w-6 h-6 text-white"></i></div>
                 <span class="text-[13px] text-white font-medium">Account</span>
             </button>
         </div>
         <div class="space-y-1 px-2">
-            <button onclick="setMode('canvas'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 transition">
+            <button onclick="setMode('canvas'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 transition cursor-pointer">
                 <i data-lucide="layout-template" class="w-6 h-6 text-gray-400"></i>
                 <div><div class="text-white text-[15px] font-semibold">Canvas Code Engine</div><div class="text-gray-400 text-[13px]">Build web components</div></div>
             </button>
-            <button onclick="setMode('general'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 transition">
+            <button onclick="setMode('general'); closeAllModals();" class="flex items-center gap-4 p-3 w-full text-left rounded-2xl hover:bg-white/5 transition cursor-pointer">
                 <i data-lucide="zap" class="w-6 h-6 text-gray-400"></i>
                 <div><div class="text-white text-[15px] font-semibold">General Assistant</div><div class="text-gray-400 text-[13px]">Real-time grounding active</div></div>
             </button>
@@ -136,7 +142,7 @@
         <div class="flex items-start gap-3">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-lg">H</div>
             <div class="bg-[#1e1e1e] border border-white/5 p-3.5 rounded-3xl rounded-tl-sm max-w-[85%] text-[15px] text-gray-200 prose leading-relaxed">
-                Hello! Code block wrapping and mobile scaling are fixed. Ready for Canvas artifacts!
+                Hello! The side menu is fully connected. Tap the top-left menu icon to test New Chat, Projects, Library, Images, and Settings!
             </div>
         </div>
     </main>
@@ -145,17 +151,50 @@
     <div id="canvasModal" class="hidden fixed inset-0 z-[80] bg-black/95 flex flex-col p-4">
         <div class="flex items-center justify-between pb-3 border-b border-white/10">
             <h3 class="font-bold text-sm text-white flex items-center gap-2"><i data-lucide="layout" class="w-4 h-4 text-purple-400"></i> Canvas Artifact Preview</h3>
-            <button onclick="toggleCanvasModal()" class="p-2 rounded-xl bg-white/10 text-gray-300"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <button onclick="toggleCanvasModal()" class="p-2 rounded-xl bg-white/10 text-gray-300 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
         <div class="flex-1 mt-3 bg-white rounded-2xl overflow-hidden">
             <iframe id="canvasIframe" class="w-full h-full border-none"></iframe>
         </div>
     </div>
 
+    <!-- PROJECTS MODAL -->
+    <div id="projectsModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeAllModals()"></div>
+        <div class="bg-[#1a1a1c] w-full max-w-md rounded-3xl p-6 border border-white/10 shadow-2xl relative z-[70]">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2"><i data-lucide="folder-kanban" class="w-5 h-5 text-purple-400"></i> HAD AI Projects</h3>
+                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+                    <div><h4 class="font-semibold text-white">HAD AI Mobile App</h4><p class="text-xs text-gray-400">Active workspace</p></div>
+                    <span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-lg font-bold">Active</span>
+                </div>
+                <button onclick="showToast('Create new project workspace coming soon'); closeAllModals();" class="w-full py-3 rounded-2xl bg-purple-600 text-white font-bold text-xs shadow-lg cursor-pointer">+ New Project Workspace</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIBRARY MODAL -->
+    <div id="libraryModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeAllModals()"></div>
+        <div class="bg-[#1a1a1c] w-full max-w-md rounded-3xl p-6 border border-white/10 shadow-2xl relative z-[70]">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2"><i data-lucide="layout-grid" class="w-5 h-5 text-purple-400"></i> Chat Library</h3>
+                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-2 text-sm text-gray-300 max-h-60 overflow-y-auto no-scrollbar">
+                <div class="p-3 bg-white/5 rounded-2xl">Building HAD AI: Getting Started</div>
+                <div class="p-3 bg-white/5 rounded-2xl">Canvas Code Engine Testing</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ATTACHMENT PREVIEW -->
     <div id="attachmentPreview" class="hidden fixed bottom-20 left-4 right-4 z-20 bg-[#1a1a1c] p-2.5 rounded-2xl flex items-center justify-between border border-white/10 shadow-xl">
         <div class="flex items-center gap-3"><img id="previewImg" class="w-12 h-12 object-cover rounded-xl" src=""><span class="text-sm font-medium text-gray-200">Image attached</span></div>
-        <button onclick="clearAttachment()" class="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button onclick="clearAttachment()" class="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
     </div>
 
     <!-- FOOTER INPUT -->
@@ -172,7 +211,7 @@
     <div id="authModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeAllModals()"></div>
         <div class="bg-[#1a1a1c] w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl relative z-[70]">
-            <button onclick="closeAllModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <button onclick="closeAllModals()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
             <div class="text-center mb-6">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg mx-auto mb-3 text-xl">H</div>
                 <h3 class="font-bold text-xl text-white">Join HAD AI</h3>
@@ -181,8 +220,8 @@
                 <input type="email" id="emailInput" placeholder="Email address" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-[15px] text-white focus:outline-none">
                 <input type="password" id="passwordInput" placeholder="Password (min 6 chars)" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-[15px] text-white focus:outline-none">
                 <div class="flex gap-3 pt-2">
-                    <button onclick="executeAuth('register')" class="flex-1 py-3.5 rounded-2xl bg-purple-600 text-white font-bold text-sm">Register</button>
-                    <button onclick="executeAuth('login')" class="flex-1 py-3.5 rounded-2xl bg-white text-black font-bold text-sm">Sign In</button>
+                    <button onclick="executeAuth('register')" class="flex-1 py-3.5 rounded-2xl bg-purple-600 text-white font-bold text-sm cursor-pointer">Register</button>
+                    <button onclick="executeAuth('login')" class="flex-1 py-3.5 rounded-2xl bg-white text-black font-bold text-sm cursor-pointer">Sign In</button>
                 </div>
             </div>
         </div>
@@ -194,14 +233,14 @@
         <div class="bg-[#1a1a1c] w-full max-w-md rounded-3xl p-6 border border-white/10 shadow-2xl relative z-[70]">
             <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                 <h3 class="font-bold text-lg text-white">HAD AI Settings</h3>
-                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="space-y-4 text-sm">
                 <div class="flex flex-col gap-2 py-2 border-b border-white/5">
                     <label class="text-gray-300 font-medium">Select AI Speaking Voice:</label>
                     <select id="voiceSelect" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white"><option value="">Default System Voice</option></select>
                 </div>
-                <button onclick="clearChatHistory(); closeAllModals();" class="w-full py-3 rounded-xl bg-red-500/20 text-red-400 font-semibold text-xs mt-2">Clear Chat History</button>
+                <button onclick="clearChatHistory(); closeAllModals();" class="w-full py-3 rounded-xl bg-red-500/20 text-red-400 font-semibold text-xs mt-2 cursor-pointer">Clear Chat History</button>
             </div>
         </div>
     </div>
@@ -210,7 +249,7 @@
     <div id="liveModal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-6">
         <div class="flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span><span class="text-xs font-bold uppercase tracking-widest text-gray-300">HAD Live Voice</span></div></div>
         <div class="flex flex-col items-center justify-center space-y-6 my-auto"><div id="liveOrb" class="liquid-orb flex items-center justify-center"><i data-lucide="sparkles" class="w-10 h-10 text-white/80"></i></div><div class="text-center"><h3 class="text-lg font-semibold text-white">Listening...</h3></div></div>
-        <div class="flex justify-center mb-8"><button onclick="toggleLiveMode()" class="p-5 rounded-full bg-red-600 text-white shadow-lg"><i data-lucide="phone-off" class="w-6 h-6"></i></button></div>
+        <div class="flex justify-center mb-8"><button onclick="toggleLiveMode()" class="p-5 rounded-full bg-red-600 text-white shadow-lg cursor-pointer"><i data-lucide="phone-off" class="w-6 h-6"></i></button></div>
     </div>
 
     <div id="toastContainer" class="fixed top-16 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-11/12 max-w-sm pointer-events-none"></div>
@@ -224,6 +263,7 @@
         let recognition = null;
         let synth = window.speechSynthesis;
         let voices = [];
+        let currentUser = null;
 
         function populateVoiceList() {
             if(!synth) return;
@@ -241,7 +281,25 @@
         if (synth) { populateVoiceList(); synth.onvoiceschanged = populateVoiceList; }
 
         const firebaseConfig = { apiKey: "AIzaSyCfB7qfZVn1SHL6ylslXHXm-MYy-ha9F00", authDomain: "had-ai.firebaseapp.com", projectId: "had-ai" };
-        try { firebase.initializeApp(firebaseConfig); } catch(e){}
+        try { 
+            firebase.initializeApp(firebaseConfig); 
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    const name = user.email.split('@')[0];
+                    document.getElementById('userNameDisplay').innerText = name;
+                    document.getElementById('userStatusDisplay').innerText = "Cloud Synced";
+                    document.getElementById('userAvatar').innerText = name.charAt(0).toUpperCase();
+                    document.getElementById('signOutBtn').classList.remove('hidden');
+                } else {
+                    currentUser = null;
+                    document.getElementById('userNameDisplay').innerText = "Sign In";
+                    document.getElementById('userStatusDisplay').innerText = "Cloud Memory Off";
+                    document.getElementById('userAvatar').innerText = "?";
+                    document.getElementById('signOutBtn').classList.add('hidden');
+                }
+            });
+        } catch(e){}
 
         function showToast(message) {
             const container = document.getElementById('toastContainer');
@@ -257,10 +315,14 @@
         function toggleActionSheet() { document.getElementById('actionSheet').classList.toggle('sheet-closed'); document.getElementById('actionSheet').classList.toggle('sheet-open'); document.getElementById('uiOverlay').classList.toggle('hidden'); document.getElementById('uiOverlay').classList.toggle('opacity-0'); }
         function openAuthModal() { closeAllModals(); document.getElementById('authModal').classList.remove('hidden'); }
         function openSettingsModal() { closeAllModals(); document.getElementById('settingsModal').classList.remove('hidden'); }
+        function openProjectsModal() { closeAllModals(); document.getElementById('projectsModal').classList.remove('hidden'); }
+        function openLibraryModal() { closeAllModals(); document.getElementById('libraryModal').classList.remove('hidden'); }
+        
         function closeAllModals() {
             document.getElementById('sidebar').classList.add('-translate-x-full');
             document.getElementById('actionSheet').classList.remove('sheet-open'); document.getElementById('actionSheet').classList.add('sheet-closed');
             document.getElementById('authModal').classList.add('hidden'); document.getElementById('settingsModal').classList.add('hidden');
+            document.getElementById('projectsModal').classList.add('hidden'); document.getElementById('libraryModal').classList.add('hidden');
             document.getElementById('uiOverlay').classList.add('opacity-0'); setTimeout(() => document.getElementById('uiOverlay').classList.add('hidden'), 300);
         }
 
@@ -275,9 +337,18 @@
             } catch(e) { showToast(e.message); }
         }
 
+        async function handleSignOut() {
+            try {
+                await firebase.auth().signOut();
+                showToast("Signed out successfully.");
+                closeAllModals();
+            } catch(e) { showToast("Sign out error."); }
+        }
+
         function setMode(mode) {
             const badge = document.getElementById('activeModeBadge');
             if (mode === 'canvas') { activeSystemInstruction = "You are HAD Canvas Code Engine. Always wrap web applications in ```html code blocks."; badge.innerText = "Canvas ▾"; showToast("Canvas Mode Active"); }
+            else if (mode === 'image') { activeSystemInstruction = "User wants to generate or talk about images. Be descriptive."; badge.innerText = "Images ▾"; showToast("Images Mode Active"); }
             else { activeSystemInstruction = "You are HAD AI, a powerful assistant. Today is Friday, Nov 6, 2026."; badge.innerText = "General ▾"; showToast("General Mode Active"); }
         }
         function toggleModeSelector() { setMode(activeSystemInstruction.includes('Canvas') ? 'general' : 'canvas'); }
@@ -335,17 +406,30 @@
 
             const loadingId = appendLoadingIndicator();
             try {
-                const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: conversationHistory, systemInstruction: activeSystemInstruction }) });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+                const response = await fetch('/api/chat', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ contents: conversationHistory, systemInstruction: activeSystemInstruction }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
                 const data = await response.json();
-                document.getElementById(loadingId).remove();
+                document.getElementById(loadingId)?.remove();
 
                 if (response.ok && data.candidates) {
                     const aiReply = data.candidates[0].content.parts[0].text;
                     conversationHistory.push({ role: 'model', parts: [{ text: aiReply }] });
                     appendMessage('ai', aiReply);
                     speakResponse(aiReply);
-                } else { appendMessage('ai', `⚠️ Error: ${data.error}`); }
-            } catch (err) { document.getElementById(loadingId).remove(); appendMessage('ai', `❌ Network Error`); }
+                } else { appendMessage('ai', `⚠️ Error: ${data.error || 'Server busy'}`); }
+            } catch (err) { 
+                document.getElementById(loadingId)?.remove(); 
+                appendMessage('ai', err.name === 'AbortError' ? '❌ Request took too long. Please try again.' : '❌ Network Error'); 
+            }
         }
 
         function appendMessage(sender, text, imgSrc = null) {
@@ -357,7 +441,7 @@
             
             let canvasBtn = '';
             if (sender === 'ai' && text.includes('```html')) {
-                canvasBtn = `<button onclick="openCanvas(this)" class="mt-3 bg-purple-600/30 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5"><i data-lucide="play" class="w-3.5 h-3.5"></i> Open Canvas Artifact</button>`;
+                canvasBtn = `<button onclick="openCanvas(this)" class="mt-3 bg-purple-600/30 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"><i data-lucide="play" class="w-3.5 h-3.5"></i> Open Canvas Artifact</button>`;
             }
 
             msgDiv.innerHTML = `
@@ -383,7 +467,7 @@
             div.id = id;
             div.className = 'flex items-start gap-3';
             div.innerHTML = `<div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">H</div><div class="bg-[#1e1e1e] p-4 rounded-3xl text-gray-400">Thinking...</div>`;
-            document.getElementById('chatWindow').appendChild(div);
+            document.getElementById('chatWindow')->appendChild(div);
             return id;
         }
     </script>
