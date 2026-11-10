@@ -14,36 +14,43 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel.' });
     }
 
-    const defaultPrompt = "You are HAD AI, a helpful assistant.";
-    const activePrompt = systemInstruction || defaultPrompt;
+    const activePrompt = systemInstruction || "You are HAD AI, a fast personal assistant.";
     
-    // Triple-model fallback pipeline to bypass high demand spikes
-    const models = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-3.5-flash-lite'];
+    // Using the REAL, active Gemini models 
+    const models = ['gemini-1.5-flash', 'gemini-1.5-pro'];
     let lastErrorDetails = null;
 
     for (const model of models) {
-      const payload = {
-        contents,
-        systemInstruction: { parts: [{ text: activePrompt }] }
-      };
+      try {
+        // 8.5 second timeout to prevent Vercel from crashing the app
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8500);
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }
-      );
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents,
+              systemInstruction: { parts: [{ text: activePrompt }] }
+            }),
+            signal: controller.signal
+          }
+        );
+        clearTimeout(timeoutId);
 
-      const data = await response.json();
-      if (response.ok) return res.status(200).json(data);
+        const data = await response.json();
+        if (response.ok) return res.status(200).json(data);
 
-      lastErrorDetails = data.error?.message || JSON.stringify(data);
+        lastErrorDetails = data.error?.message || JSON.stringify(data);
+      } catch (fetchErr) {
+        lastErrorDetails = fetchErr.message;
+      }
     }
 
-    return res.status(500).json({ error: `Gemini API Error: ${lastErrorDetails}` });
+    return res.status(500).json({ error: `API Error: ${lastErrorDetails}` });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'Server Exception: ' + err.message });
   }
 }
