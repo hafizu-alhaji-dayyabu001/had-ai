@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     const activePrompt = systemInstruction || "You are HAD AI, a fast personal assistant.";
     
     // Using official Google Gemini model identifiers
-    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-3.6-flash', 'gemini-3.8-flash'];
     let lastErrorDetails = null;
 
     for (const model of models) {
