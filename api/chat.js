@@ -19,7 +19,7 @@ export default async function handler(req,res){
   const body=req.body||{},mode=String(body.mode||"general"),history=Array.isArray(body.messages)?body.messages.slice(-16):[];
   if(!history.length||history.length>16)return res.status(400).json({error:"Please send a message first."});
   const contents=history.map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:String(m.content||"").slice(0,12000)}]}));
-  if(input.some(m=>!m.content.trim()))return res.status(400).json({error:"Message content cannot be empty."});
+  if(contents.some(m=>!m.parts[0].text.trim()))return res.status(400).json({error:"Message content cannot be empty."});
   const model=process.env.GEMINI_MODEL||"gemini-3.8-flash";
   const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"x-goog-api-key":key,"Content-Type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:SYSTEMS[mode]||SYSTEMS.general}]},contents,generationConfig:{maxOutputTokens:1800}})});
   const data=await response.json();
